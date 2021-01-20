@@ -2,18 +2,16 @@
 #############################################################################################
 #
 # Snapraid helper script written in PERL. Enables automation using cron for your Array Syncs
-#
 # Please see README.md
 #
 #############################################################################################
 
 #############################################################################################
 #
-# Created by Steve Miles (SmileyMan). https://github.com/SmileyMan
-#                                     http://snapperl.stevemiles.me.uk/
-#                                     http://stevemiles.me.uk/
+# Edited by Oskari Anttonen		###	  Bug fixes for Snapraid v11+
 #
-# Email Support                       snapperl@stevemiles.me.uk
+# Originally Created by Steve Miles (SmileyMan) https://github.com/SmileyMan
+#                                     			
 # (Please note: Free script so will help where I can)
 #
 #############################################################################################
@@ -33,10 +31,7 @@ use JSON::PP;            # Encode data to JSON for storage
 use Getopt::Long;        # Get command line options
 use Data::Dumper;        # Debug use - Dump hashes used
 
-# Work started on v0.4.0
-our $VERSION = '0.3.1';
-
-# Todo: More updates to log when running explaining whats going on for interactive use!
+our $VERSION = '0.3.01';
 
 ############################## Script only from here ########################################
 
@@ -80,6 +75,7 @@ $cmdLineOpts->getoptions (
   "email!"            => \$argv{emailSend},
   "custom!"           => \$argv{useCustomCmds},
   "pushover!"         => \$argv{pushOverSend},
+# "pushbullet!"       => \$argv{pushBulletSend},
   "smart!"            => \$argv{smartLog},
   "pool!"             => \$argv{pool},
   "spindown!"         => \$argv{spinDown},
@@ -126,6 +122,11 @@ parse_conf();
 # Check conf hash
 check_conf();
 
+logit(  text    => 'Checking file status', 
+        message => '',
+        level   => 3,
+      );
+
 # Get current state.
 snap_status();
 snap_diff();
@@ -133,8 +134,7 @@ snap_diff();
 # Sync needed?
 if ( $diffHash{sync} ) {
 
-  # Check set limitsn here - Tagged to investigate
-  # Todo: Somthing funky going o
+  # Check set limits (RECHECK THIS).
   if ( $diffHash{removed} <= $opt{deletedFiles} && $diffHash{updated} <= $opt{changedFiles} ) {
     logit(  text    => 'There are differences. Sync running', 
             message => 'Sync running',
@@ -420,7 +420,7 @@ sub snap_sync {
 
   # Lexical's
   my $excludedCount = 0;
-  my ( $dataProcessed, $fullLog );
+  my ( $dataProcessed, $fullLog, $timeElapsed );
   
   my ( $output, $exitCode, $snapLog );
   # Use pre-hash on sync? Snapraid version must be 10.0+
@@ -453,21 +453,31 @@ sub snap_sync {
       $fullLog .= $line . "\n";
     }
 
-    # Get size of data processed
-    if ( $line =~ m/completed/i ) { ( $dataProcessed ) = $output =~ m/completed,?\s+?(\d+?)\s+?MB\s+?processed/i; }
+    # Get size of data accessed (add time elapsed in the future)
+    if ( $line =~ m/completed/i ) { ( $dataProcessed ) = $output =~ m/completed,?\s+?(\d+?)\s+?MB\s+?accessed/i; }
 
-    # Was it a success?
-    if ( $line =~ m/Everything\s+?OK/i or $line =~ m/Nothing\s+?to\s+?do/i ) { $opt{syncSuccess} = 1; }
+    # Was sync a success?
+    if ( $line =~ m/Everything\s+?OK/i ) { $opt{syncSuccess} = 1; }
+	
+	# There was nothing to sync?
+	if ( $line =~ m/Nothing\s+?to\s+?do/i ) { $opt{syncSuccess} = 2; }
 
   }
 
-  if ( $opt{syncSuccess} ) {
+  if ( $opt{syncSuccess} == 1 ) {
 
-    # Log details from sync.
-    logit(  text    => "Snapraid sync completed: $dataProcessed MB processed and $excludedCount files excluded", 
+    # Log details from sync. (add time elapsed in the future)
+    logit(  text    => "Snapraid sync completed: $dataProcessed MB accessed and $excludedCount files excluded", 
             message => "Snapraid sync comp: $dataProcessed MB",
             level   => 3,
           );
+  }
+    # Log Nothing to sync
+  elsif ( $opt{syncSuccess} == 2 ) {
+    logit(  text    => 'Snapraid sync completed: Nothing to do',
+            message => 'Snapraid sync comp: Nothing to do',
+            level   => 3,
+          );   
   }
   else {
     # Stop script.
@@ -512,11 +522,12 @@ sub snap_sync {
 # Perform a scrub on array
 # usage snap_scrub( plan => 'plan', age => 'age' );
 # return void
+# ADD TIME ELAPSED TO LOG
 sub snap_scrub {
 
   # Grab first to elements of passed array.
   my %cmdArgs = @_;
-  my $dataProcessed;
+  my ( $dataProcessed, $timeElapsed );
   
   if ( $cmdArgs{plan} eq 'new' ) { $cmdArgs{planNew} = 1; }
   
@@ -534,8 +545,8 @@ sub snap_scrub {
           ); 
   }
 
-  #Get size of data processed
-  if ( $output =~ m/completed/i ) { ( $dataProcessed ) = $output =~ m/completed,?\s+?(\d+?)\s+?MB processed/i; }
+  #Get size of data accessed (add time elapsed in the future)
+  if ( $output =~ m/completed/i ) { ( $dataProcessed ) = $output =~ m/completed,?\s+?(\d+?)\s+?MB accessed/i; }
 
   # Was it a success?
   if ( $output =~ m/Everything\s+?OK/i ) {
@@ -557,8 +568,8 @@ sub snap_scrub {
               );
       }
     }  
-    # Log details from scrub.
-    logit(  text    => "Snapraid scrub completed: $dataProcessed MB processed",
+    # Log details from scrub. (add time elapsed in the future)
+    logit(  text    => "Snapraid scrub completed: $dataProcessed MB accessed",
             message => "Snapraid scrub comp: $dataProcessed MB",
             level   => 3,
           );
@@ -1402,23 +1413,13 @@ sub script_comp {
     );
 
   }
-<<<<<<< HEAD
-  
-  if ( $opt{useCustomCmds} ) {
-
-    # Run post commands
-    custom_cmds('post');
-  }
-  
-=======
-
+  # Run post commands
   # Move here to fix Fatal Exit nit running Post Commands issue..
   if ( $opt{useCustomCmds} ) {
     # Run post commands
     custom_cmds('post');
   }
-
->>>>>>> bb7f27640566a38f5da042a49a0419c49678d284
+  
   return;
 }
 
@@ -2078,7 +2079,7 @@ sub validate_conf {
     gmailOptions      => [ qw( emailUseGmail emailGmailToAddress emailGmailUser emailGmailPass )                                                                      ],
     pushoverOptions   => [ qw( pushOverSend pushOverKey pushOverToken pushOverUrl pushDefaultPriority pushWarningPriority pushCriticalPriority pushSound pushDevice ) ],
     #nmaOptions        => [ qw( nmaSend ) ],
-    #pushbulletOptions => [ qw( pushBulletSend ) ],
+    #pushbulletOptions => [ qw( pushBulletSend pushBulletKey pushBulletUrl pushDevice_iden ) ],
   }; 
   
   # Cycle though $validate and confirm all options listed loaded from conf file (Check conf updated with new options)
@@ -2110,21 +2111,22 @@ sub show_cmdline_help {
   if ( $argv{help} ) {
     # Build help
     my $help = q(
-    snapPERL.pl [ -c  --conf CONFIG         { Full path to conf file        } ]
-                [ -x  --custom-cmds FILE    { Full path to custom-cmds file } ]
-                [ -m  --message-level 1-3   { Set message level             } ]
-                [ -l  --log-level 1-5       { Set log level                 } ]
-                [ --stdout    --nostdout    { Toggle log to stdout          } ]
-                [ --check     --nocheck     { Toggle check option enable    } ]
-                [ --scrub     --noscrub     { Toggle scrub option enable    } ]
-                [ --email     --noemail     { Toggle email send             } ]
-                [ --custom    --nocustom    { Toggle custom cmds            } ]
-                [ --pushover  --nopushover  { Toggle Pushover send          } ]
-                [ --smart     --nosmart     { Toggle smart logging          } ]
-                [ --pool      --nopool      { Toggle snapraid pool          } ]
-                [ --spindown  --nospindown  { Toggle spindown disks         } ]
-                [ -h  --Help                { This Help                     } ]
-                [ -v  --version             { Display Version               } ]
+    snapPERL.pl [ -c  --conf CONFIG             { Full path to conf file        } ]
+                [ -x  --custom-cmds FILE        { Full path to custom-cmds file } ]
+                [ -m  --message-level 1-3       { Set message level             } ]
+                [ -l  --log-level 1-5           { Set log level                 } ]
+                [ --stdout    --nostdout        { Toggle log to stdout          } ]
+                [ --check     --nocheck         { Toggle check option enable    } ]
+                [ --scrub     --noscrub         { Toggle scrub option enable    } ]
+                [ --email     --noemail         { Toggle email send             } ]
+                [ --custom    --nocustom        { Toggle custom cmds            } ]
+                [ --pushover  --nopushover      { Toggle Pushover send          } ]
+                [ --pusbullet --nopushbullet    { Toggle Pushover send          } ]
+                [ --smart     --nosmart         { Toggle smart logging          } ]
+                [ --pool      --nopool          { Toggle snapraid pool          } ]
+                [ --spindown  --nospindown      { Toggle spindown disks         } ]
+                [ -h  --Help                    { This Help                     } ]
+                [ -v  --version                 { Display Version               } ]
     );
     
     # Display help
