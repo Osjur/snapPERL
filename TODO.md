@@ -1,5 +1,18 @@
 
-#Todo
+### Todo by Osjur ###
+          (v0.3.02)
+          Fix scrub so that it can be forced to run if sync was success. Setting 0 days 
+          to scrub options in snapPerl.config and latest scrub is 0 days ago breaks the script at the moment.
+          
+          (v0.3.1)
+          Check & Fix rest of the commands which are disabled in snapPerl.config by default
+          Check and fix/add multi-parity support.
+          
+          (v0.3.2)
+          Add Pushbullet support
+          
+
+#### SmileyMan Old TODO List ####
 
            Checks and tests with latest Snapraid (Plan v0.4)
            Scrape Log Files and STDOUT for command output processing (Plan v0.4)
