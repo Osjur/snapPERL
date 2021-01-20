@@ -1,3 +1,6 @@
+20/01/2020 v0.3.01
+            Fixed the script so that it runs with Snapraid 11.5 with default settings.
+
 27/05/2016 v0.3.0
             Sanity check for loaded conf file before calls to snapraid
             Code added to catch fatal calls to load Modules not installed (Gmail and Email)
