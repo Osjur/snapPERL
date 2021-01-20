@@ -15,7 +15,7 @@
 #### _Requires a PERL distribution to be installed_
 ##### Tested on Windows 10 - Snapraid x64 v11.5 and Latest ActivePerl 
 
-## Linux Compatible (Not verified to work as of yet)
+## Linux Compatible (Not verified to work as of yet, though it should)
  
 ---
 

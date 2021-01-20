@@ -60,12 +60,16 @@ checkAutoFix=0                                                # Auto call snapra
 # snapRaidBin MUST contain the full path to the snapraid binary. (Defult location entered)
 # snapRaidConf MUST contain the full path to the snapraid conf file. (Default location entered)
 # Other options are very self explanatory
-# 
-snapRaidBin=/usr/local/bin/snapraid                           # *Snapraid binary location - Linux (comment out for windows)
-snapRaidConf=/etc/snapraid.conf                               # *Location of snapraid conf file - Linux (comment out for windows)
-#snapRaidBin=C:\snapraid\snapraid.exe                         # Snapraid binary location - Windows - Must point to your snapraid.exe or script will abort (uncomment for windows)
-#snapRaidConf=C:\snapraid\snapraid.conf                       # Location of snapraid conf file - Windows - Must point to your snapraid.conf file or script will abort (uncomment for windows)
-#snapRaidTmpLocation=                                          # Location of tmp files (if not defined uses scripts tmp directory) - Default setting is Empty
+
+# Snapraid Linux file locations 
+#snapRaidBin=/usr/local/bin/snapraid                          # *Snapraid binary location - Linux (uncomment for Linux)
+#snapRaidConf=/etc/snapraid.conf                              # *Location of snapraid conf file - Linux (uncomment for Linux)
+
+# Snapraid Windows file locations 
+snapRaidBin=C:\snapraid\snapraid.exe                          # Snapraid binary location - Windows - Must point to your snapraid.exe or script will abort (comment out for Linux)
+snapRaidConf=C:\snapraid\snapraid.conf                        # Location of snapraid conf file - Windows - Must point to your snapraid.conf file or script will abort (comment out for Linux)
+
+#snapRaidTmpLocation=                                         # Location of tmp files (if not defined uses scripts tmp directory) - Default setting is Empty
 preHashOnSync=1                                               # Pre-hash during sync to remove posiblity of silent error on busy machines. Please see snapraid manual http://www.snapraid.it/manual - Recomended Option! - v10.0+ only
 resetTimeStamps=1                                             # Use touch command to reset sub-second time stamps (Snapraid 10.0+)
 spinDown=0                                                    # Spindown array once script completed
@@ -153,3 +157,7 @@ nmaSend=0                                                     # Send NMA alerts 
 # Not yet implemented
 #
 pushBulletSend=0                                              # Send pushbullet alerts - Not currently active
+pushBulletKey=#### 											  # Pushbullet API key
+pushBulletUrl=##### 										  # Pushbullet url to send messages
+pushDevice_iden=#####										  # Device to send messages to
+

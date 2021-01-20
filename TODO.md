@@ -1,6 +1,20 @@
 
-#Todo
+### Todo by Osjur ###
+          (v0.3.02)
+          Fix scrub so that it can be forced to run if sync was success. Setting 0 days 
+          to scrub options in snapPerl.config and latest scrub is 0 days ago breaks the script at the moment.
+          
+          (v0.3.1)
+          Check & Fix rest of the commands which are disabled in snapPerl.config by default
+          Check and fix/add multi-parity support.
+          
+          (v0.3.2)
+          Add Pushbullet support
+          
 
+#### SmileyMan Old TODO List ####
+
+           Checks and tests with latest Snapraid (Plan v0.4)
            Scrape Log Files and STDOUT for command output processing (Plan v0.4)
            Move Logit messages to external file en_GB.lang to allow translations (Plan v0.4)
 
@@ -45,8 +59,10 @@
            Add catches for snapraid DANGER! messages (Done v0.3)
            Option to enforce minimum days between syncs (Done v0.3)
            Limited command line options that overide conf settings (Done v0.3)
+           
+           Issue weith Post Commands not running after fatal Exit (Done 0.4)
                                 
 #Removed
            Allow smart data per disk (Plan v0.4) - No snapraid support
            Add option to delete duplicates and re-sync (Adding symbolic refs if wanted) (Plan v0.4) - Breaks underlying rule to not touch data
-           Big one - Check and auto update snapraid binary if enabled (Plan v1.0) - Potentialy dangerous and breaks underlying rule to not touch data
+           Big one - Check and auto update snapraid binary if enabled (Plan v1.0) - Potentialy dangerous and breaks underlying rule to not touch data.
