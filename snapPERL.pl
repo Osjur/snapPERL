@@ -1246,6 +1246,18 @@ sub check_conf {
           );
 	}	
   }
+  
+  # Check all data locations exist
+  foreach my $confKey ( sort(keys %{ $conf{data} }) ) { 
+    if ( not -d $conf{data}->{$confKey} ) { 
+      # Missing data location - Set flag to abort
+      $invalidConf = 1;
+      logit(  text    => "Warning: Missing data drive: $conf{data}->{$confKey}",
+              message => "Warn: Missing data drive: $conf{data}->{$confKey}",
+              level   => 2,
+            );
+    }
+  }
    
   if ( $invalidConf ) {
     logit(  text    => 'Critical: Invalid snapraid conf file - Aborting',
