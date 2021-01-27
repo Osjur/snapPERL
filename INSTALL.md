@@ -1,4 +1,4 @@
-# Install Instructions
+# Install Instructions Linux (Install script not updated to work automatically as of v3.02)
 
 ### Required Perl Modules - These will autoload on demand
 ~~~
@@ -13,7 +13,7 @@ Email::Send::Gmail (If using gmail)       ->  command: sudo cpan install Email::
 
 ##### Feel free to test. All data manipulation is done by snapraid http://www.snapraid.it/
 
-#### Install
+#### Linux
 
 Install Script:
 

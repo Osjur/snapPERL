@@ -31,7 +31,7 @@ use JSON::PP;            # Encode data to JSON for storage
 use Getopt::Long;        # Get command line options
 use Data::Dumper;        # Debug use - Dump hashes used
 
-our $VERSION = '0.3.01';
+our $VERSION = '0.3.02';
 
 ############################## Script only from here ########################################
 
@@ -264,9 +264,9 @@ sub snap_status {
   ( $opt{snapVersion} ) = $output =~ m/snapraid\s+?v(\d+?.\d+?)/i;
   
   # Not using a current version of snapraid..
-  if ( $opt{snapVersion} < 10.0 and not $opt{noVersionWarnings} ) {
-    logit(  text    => 'Info: snapPERL tested and works best on snapraid v10.0+',
-            message => 'Info: snapPERL works best on snapraid v10.0+',
+  if ( $opt{snapVersion} < 11.0 and not $opt{noVersionWarnings} ) {
+    logit(  text    => 'Info: snapPERL tested and works best on snapraid v11.0+',
+            message => 'Info: snapPERL works best on snapraid v11.0+',
             level   => 3,
           );
   }
@@ -461,7 +461,6 @@ sub snap_sync {
 	
 	# There was nothing to sync?
 	if ( $line =~ m/Nothing\s+?to\s+?do/i ) { $opt{syncSuccess} = 2; }
-
   }
 
   if ( $opt{syncSuccess} == 1 ) {
@@ -853,6 +852,7 @@ sub snap_check {
           } 
           else {          
             # Call snapraid to fix - snap_fix sub needed! - Hum... How safe? - Maybe DANGEROUS option
+			# Breaks the rule to not modify data!
           }
   
         }
@@ -1107,7 +1107,8 @@ sub parse_conf {
       $key    =~ s/^\s+|\s+$//g;      # Remove leading and trailing whitespace
       $value  =~ s/^\s+|\s+$//g;      # Remove leading and trailing whitespace
 
-      # Process parity - Snapraid v11.0 added multi parity files per parity level. Modified to collect these! (\A forces an anchor and strips main parity entry)
+
+      # Process parity - Split-file parity supported. Modified to collect these! (\A forces an anchor and strips main parity entry)
       if ( $key =~ m/\Aparity/i ) { 
         my @parityFiles = split(/\,/, $value );
         foreach my $parityFile ( @parityFiles ) {
@@ -1116,17 +1117,22 @@ sub parse_conf {
         }
         next;
       }
-      
-      # Process extra parity - Snapraid v11.0 added multi parity files per parity level. Modified to collect these!
+
+### CHECK AND DO SOMETHING TO THIS ###
+#Works but needs to be made better, it's a dirty hack imo
+
+      # Process extra parity levels - Split-file parity per level supported. Modified to collect these!
       if ( $key =~ m/.+?parity/i ) { 
         my @parityFiles = split(/\,/, $value );
         foreach my $parityFile ( @parityFiles ) {
-          $parityFile =~ s/^\s+|\s+$//g; 
-          $conf{xparity}->{$key}[ $#{ $conf{xparity}{$key} } + 1 ] = $parityFile;
+          $parityFile =~ s/^\s+|\s+$//g;
+		  $key =~ tr/-2/x/d; # rename - to x and delete number (otherwise bareword not allowed)
+          $conf{$key}[ $#{ $conf{$key} } + 1 ] = $parityFile;
         }
         next;
       }
-
+######################################
+	  
       # Process other options and add to hash-array
       elsif ( $key =~ m/content|exclude|share/i ) { 
         $conf{$key}->[ $#{ $conf{$key} } + 1 ] = $value; 
@@ -1199,36 +1205,7 @@ sub check_conf {
 
   # Set to 1 to abort
   my $invalidConf = 0;
- 
-  # Check parity - Does not support checking extra files in v11.0. Don't know yet if snapraid creates these files before it uses them!
-  if ( not defined $conf{parity}[0] or not -e $conf{parity}[0] ) { 
-    # No parity file - Set flag to abort
-    $invalidConf = 1;
-    # Prevents undefined warning if not loaded from config!
-    my $parity = defined $conf{parity}[0] ? $conf{parity}[0] : 'Not loaded from config';
-    
-    logit(  text    => "Warning: Missing parity file: $parity",
-            message => "Warn: Missing parity file: $parity",
-            level   => 2,
-          );
-    logit(  text    => 'Warning: Parity not mounted or not built?',
-            message => 'Warn: Parity not mounted or not built?',
-            level   => 2,
-          );
-  }
   
-  # Check all data locations exist
-  foreach my $confKey ( sort(keys %{ $conf{data} }) ) { 
-    if ( not -d $conf{data}->{$confKey} ) { 
-      # Missing data location - Set flag to abort
-      $invalidConf = 1;
-      logit(  text    => "Warning: Missing data drive: $conf{data}->{$confKey}",
-              message => "Warn: Missing data drive: $conf{data}->{$confKey}",
-              level   => 2,
-            );
-    }
-  }
-
   # Check each content file listed exists
   my $anyValidContent = 0;
   for ( my $i = 0 ; $i <= $#{ $conf{content} } ; $i++ ) {
@@ -1240,30 +1217,61 @@ sub check_conf {
     } 
     else { 
       # At least one valid content file exist. So we don't abort and let snapraid handle it
+	  # No valid content file at all checked at sub end 
       $anyValidContent = 1; 
     } 
   }
-  # No valid content file - Set flag to abort
-  if ( not $anyValidContent ) { $invalidConf = 1; }
   
-  # Check each extra parity exists - Does not support checking extra files in v11.0. Don't know yet if snapraid creates these files before it uses them!
-  foreach my $xparity ( keys %{$conf{xparity}} ) {
-      if ( not defined $conf{xparity}->{$xparity} or not -e $conf{xparity}->{$xparity}[0] ) { 
-        # Missing extra parity file - Set flag to abort
-        $invalidConf = 1;
-        # Prevents undefined warning if not loaded from config!
-        my $parity = defined $conf{xparity}->{$xparity}[0] ? $conf{xparity}->{$xparity}[0] : 'Not loaded from config';
-        logit(  text    => "Warning: Missing parity file: $conf{xparity}->{$xparity}[0]",
-                message => "Warn: Missing parity file: $conf{xparity}->{$xparity}[0]",
-                level   => 2,
-              );
-        logit(  text    => 'Warning: Parity not mounted or not built?',
-                message => 'Warn: Parity not mounted or not built?',
-                level   => 2,
-              );
-      }
+  # One parity level: Check if every file listed for single parity exists. 
+  # Works with split-parity files, as they are created when sync is run
+  for ( my $p = 0 ; $p <= $#{ $conf{parity} } ; $p++ ) {
+    if ( not -e $conf{parity}->[$p] ) {
+      # Missing parity file - Set flag to abort
+      $invalidConf = 1;
+	  
+      logit(  text    => "Warning: Missing parity file: $conf{parity}->[$p] = File not mounted or built?",
+            message => "Warn: Missing parity file: $conf{parity}->[$p] = File not mounted or built?",
+            level   => 2,
+          );
+	}	
+  }
+  # Extra parity levels: Check if every file listed for parity exists. 
+  # Works with split-parity files, as they are created when sync is run
+  for ( my $xp = 0 ; $xp <= $#{ $conf{xparity} } ; $xp++ ) {
+    if ( not -e $conf{xparity}->[$xp] ) {
+      # Missing parity file - Set flag to abort
+      $invalidConf = 1;
+	  
+      logit(  text    => "Warning: Missing extra parity file: $conf{xparity}->[$xp] = File not mounted or built?",
+            message => "Warn: Missing extra parity file: $conf{xparity}->[$xp] = File not mounted or built?",
+            level   => 2,
+          );
+	}	
   }
   
+  # Check if all data locations exist
+  foreach my $confKey ( sort(keys %{ $conf{data} }) ) { 
+    if ( not -d $conf{data}->{$confKey} ) { 
+      # Missing data location - Set flag to abort
+      $invalidConf = 1;
+      logit(  text    => "Warning: Missing data drive: $conf{data}->{$confKey}",
+              message => "Warn: Missing data drive: $conf{data}->{$confKey}",
+              level   => 2,
+            );
+    }
+  }
+  
+  # No valid content file at all - Set flag to abort
+  if ( not $anyValidContent ) { 
+	$invalidConf = 1; 
+		logit(  text    => "Critical: No valid content files found at all - Aborting
+		       Information: This is expected if sync has not been run even once after snapraid install",
+				message => "Crit: No valid content files found at all.",
+				level   => 2,
+            );
+	
+	}
+	#Abort script: sanity check did not pass
   if ( $invalidConf ) {
     logit(  text    => 'Critical: Invalid snapraid conf file - Aborting',
             message => 'Crit: Invalid snapraid conf - Abort',
