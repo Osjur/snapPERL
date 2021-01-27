@@ -31,7 +31,7 @@ use JSON::PP;            # Encode data to JSON for storage
 use Getopt::Long;        # Get command line options
 use Data::Dumper;        # Debug use - Dump hashes used
 
-our $VERSION = '0.3.01';
+our $VERSION = '0.3.02';
 
 ############################## Script only from here ########################################
 
@@ -264,9 +264,9 @@ sub snap_status {
   ( $opt{snapVersion} ) = $output =~ m/snapraid\s+?v(\d+?.\d+?)/i;
   
   # Not using a current version of snapraid..
-  if ( $opt{snapVersion} < 10.0 and not $opt{noVersionWarnings} ) {
-    logit(  text    => 'Info: snapPERL tested and works best on snapraid v10.0+',
-            message => 'Info: snapPERL works best on snapraid v10.0+',
+  if ( $opt{snapVersion} < 11.0 and not $opt{noVersionWarnings} ) {
+    logit(  text    => 'Info: snapPERL tested and works best on snapraid v11.0+',
+            message => 'Info: snapPERL works best on snapraid v11.0+',
             level   => 3,
           );
   }
@@ -852,6 +852,7 @@ sub snap_check {
           } 
           else {          
             # Call snapraid to fix - snap_fix sub needed! - Hum... How safe? - Maybe DANGEROUS option
+			# Breaks the rule to not modify data!
           }
   
         }
@@ -1216,13 +1217,13 @@ sub check_conf {
     } 
     else { 
       # At least one valid content file exist. So we don't abort and let snapraid handle it
+	  # No valid content file at all checked at sub end 
       $anyValidContent = 1; 
     } 
   }
-  # No valid content file - Set flag to abort
-  if ( not $anyValidContent ) { $invalidConf = 1; }
   
-  # Check if every file listed for single parity exists. Works with split-parity files, as they are created when sync is run
+  # One parity level: Check if every file listed for single parity exists. 
+  # Works with split-parity files, as they are created when sync is run
   for ( my $p = 0 ; $p <= $#{ $conf{parity} } ; $p++ ) {
     if ( not -e $conf{parity}->[$p] ) {
       # Missing parity file - Set flag to abort
@@ -1234,20 +1235,21 @@ sub check_conf {
           );
 	}	
   }
-  # Check if every file listed for extra parity levels exists. Works with split-parity files, as they are created when sync is run
+  # Extra parity levels: Check if every file listed for parity exists. 
+  # Works with split-parity files, as they are created when sync is run
   for ( my $xp = 0 ; $xp <= $#{ $conf{xparity} } ; $xp++ ) {
     if ( not -e $conf{xparity}->[$xp] ) {
       # Missing parity file - Set flag to abort
       $invalidConf = 1;
 	  
-      logit(  text    => "Warning: Missing parity file: $conf{xparity}->[$xp] = File not mounted or built?",
-            message => "Warn: Missing parity file: $conf{xparity}->[$xp] = File not mounted or built?",
+      logit(  text    => "Warning: Missing extra parity file: $conf{xparity}->[$xp] = File not mounted or built?",
+            message => "Warn: Missing extra parity file: $conf{xparity}->[$xp] = File not mounted or built?",
             level   => 2,
           );
 	}	
   }
   
-  # Check all data locations exist
+  # Check if all data locations exist
   foreach my $confKey ( sort(keys %{ $conf{data} }) ) { 
     if ( not -d $conf{data}->{$confKey} ) { 
       # Missing data location - Set flag to abort
@@ -1258,7 +1260,18 @@ sub check_conf {
             );
     }
   }
-   
+  
+  # No valid content file at all - Set flag to abort
+  if ( not $anyValidContent ) { 
+	$invalidConf = 1; 
+		logit(  text    => "Critical: No valid content files found at all - Aborting
+		       Information: This is expected if sync has not been run even once after snapraid install",
+				message => "Crit: No valid content files found at all.",
+				level   => 2,
+            );
+	
+	}
+	#Abort script: sanity check did not pass
   if ( $invalidConf ) {
     logit(  text    => 'Critical: Invalid snapraid conf file - Aborting',
             message => 'Crit: Invalid snapraid conf - Abort',

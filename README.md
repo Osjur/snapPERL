@@ -1,6 +1,6 @@
-# _*snapPERL v0.3.01*_
+# _*snapPERL v0.3.02*_
 
-#Work in Progress to make it work with Snapraid 11+.
+#Work in Progress to make it completely work with Snapraid 11+.
 
 #####Automation script for Snapraid created in PERL
 

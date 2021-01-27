@@ -1,4 +1,8 @@
-20/01/2020 v0.3.01
+24/01/2021 v0.3.02
+			Check and fix split-parity support. Script now checks if all parity files exist
+			It also nags if sync command has not been manually run even once after snapraid install.
+
+20/01/2021 v0.3.01
             Fixed the script so that it runs with Snapraid 11.5 with default settings.
 
 27/05/2016 v0.3.0

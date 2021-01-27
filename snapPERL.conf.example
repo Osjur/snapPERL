@@ -21,7 +21,7 @@ changedFiles=500                                              # Max amount of ch
 #
 scrubEnable=1                                                 # If set to 0 will totaly disable scrub. Disable all scrub activity including useScrubNew
 scrubNewest=7                                                 # Age of newest un-scrubed block before scub is run (useScrubNew will overide)
-scrubOldest=30                                                # Max oldest block before scrub is run if using 'new' plan on sync (v9.0 on)
+scrubOldest=30                                                # Max oldest block before scrub is run if using 'new' plan on sync (v9.0+ on)
 scrubAge=10                                                   # Data older than days
 scrubPercentage=8                                             # Percentage of array to scrub
 useScrubNew=1                                                 # Scrub new data from sync and verify. (Supported in versions 9.0+ of snapraid).
@@ -48,26 +48,27 @@ smartDiskErrorsWarn=1                                         # Number of errors
 # New in v0.3
 #
 checkSuspectDisks=0                                           # Enable snapraid check on disks with Fail Percentage > checkDiskFailPercentage
-checkAuditOnly=1                                              # Check only suspect disk only not the parity - Recomended setting otherwise very slow
+checkAuditOnly=1                                              # Check suspect data disk only not the parity - Recomended setting otherwise very slow
 checkOnlyAfterIncrease=1                                      # Only check once each time Fail Percentage increases over checkDiskFailPercentage (recomended setting)
 checkDiskFailPercentage=90                                    # Fail Percentage to start checking
 checkMinTimeBetweenChecks=7                                   # Minimum time that must pass between checks on suspect disks in days
 checkAutoFix=0                                                # Auto call snapraid to fix recoverable files - NOT IMPLEMENTED!
  
-## Snapraid options (Default locations)
+## Snapraid options (Default locations entered)
 #
-# Main snapraid options. 
-# snapRaidBin MUST contain the full path to the snapraid binary. (Defult location entered)
-# snapRaidConf MUST contain the full path to the snapraid conf file. (Default location entered)
-# Other options are very self explanatory
+# Main snapraid options.
+# Script is configured to work with Linux installation by default. 
+# snapRaidBin MUST contain the full path to the snapraid binary. 
+# snapRaidConf MUST contain the full path to the snapraid conf file.
+# Other options are very self explanatory.
 
-# Snapraid Linux file locations 
-#snapRaidBin=/usr/local/bin/snapraid                          # *Snapraid binary location - Linux (uncomment for Linux)
-#snapRaidConf=/etc/snapraid.conf                              # *Location of snapraid conf file - Linux (uncomment for Linux)
+# Snapraid Linux file locations (comment out these for Windows)
+snapRaidBin=/usr/local/bin/snapraid                           # *Snapraid binary location - Linux
+snapRaidConf=/etc/snapraid.conf                               # *Location of snapraid conf file - Linux
 
-# Snapraid Windows file locations 
-snapRaidBin=C:\snapraid\snapraid.exe                          # Snapraid binary location - Windows - Must point to your snapraid.exe or script will abort (comment out for Linux)
-snapRaidConf=C:\snapraid\snapraid.conf                        # Location of snapraid conf file - Windows - Must point to your snapraid.conf file or script will abort (comment out for Linux)
+# Snapraid Windows file locations (uncomment these for Windows)
+#snapRaidBin=C:\snapraid\snapraid.exe                         # Snapraid binary location - Windows - Must point to your snapraid.exe or script will abort
+#snapRaidConf=C:\snapraid\snapraid.conf                       # Location of snapraid conf file - Windows - Must point to your snapraid.conf file or script will abort
 
 #snapRaidTmpLocation=                                         # Location of tmp files (if not defined uses scripts tmp directory) - Default setting is Empty
 preHashOnSync=1                                               # Pre-hash during sync to remove posiblity of silent error on busy machines. Please see snapraid manual http://www.snapraid.it/manual - Recomended Option! - v10.0+ only
@@ -77,16 +78,16 @@ pool=0                                                        # Run pool command
 
 ## Other Options (Defaults will work fine for most. Disable logStdOut if using cron)
 #
-# If using snapraid below version 10.0 the script will carp about older unsupported versions.
-# Set noVersionWarnings=1 and it will mind it's own business (Fully things could happen. Tested on v10.0)
+# If using snapraid below version 11.0 the script will carp about older unsupported versions.
+# Set noVersionWarnings=1 and it will mind it's own business (Fully things could happen. Tested on v11.0)
 #
 logFile=snapPERL.log                                          # Main logfile name
-#logFileLocation=                                              # Location of log file (If not defined uses scripts log directory) - Default: Empty
+#logFileLocation=                                             # Location of log file (If not defined uses scripts log directory) - Default: Empty
 logLevel=3                                                    # Level of logging (1:- Critical, 2:- Warning, 3:- Info, 4:- Everything, 5:- Debug)
 messageLevel=3                                                # For pushover/NMA/PushBullet (1:- Critical only 2:- +Warnings 3:- Normal)
 logStdout=1                                                   # If set to 1 sends log file to stdout (Not very useful when run via cron :P)
 useCustomCmds=0                                               # Load custom pre and post commands from custom-cmds file (optional feature)
-noVersionWarnings=0                                           # Script will give user prompts when runing <10.0 or <9.0 versions of Snapraid - Set to 1 to shut it up
+noVersionWarnings=0                                           # Script will give user prompts when runing <11.0 versions of Snapraid - Set to 1 to shut it up
 
 ## Email Options (Optional)
 #
@@ -157,7 +158,8 @@ nmaSend=0                                                     # Send NMA alerts 
 # Not yet implemented
 #
 pushBulletSend=0                                              # Send pushbullet alerts - Not currently active
-pushBulletKey=#### 											  # Pushbullet API key
-pushBulletUrl=##### 										  # Pushbullet url to send messages
+pushBulletKey=#####  										  # Pushbullet API key
 pushDevice_iden=#####										  # Device to send messages to
+pushBulletUrl=https://api.pushbullet.com/v2/pushes			  # Pushbullet url to send messages
+
 

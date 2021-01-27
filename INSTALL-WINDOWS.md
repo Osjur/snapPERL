@@ -16,13 +16,13 @@ Email::Send::Gmail (If using gmail)       ->  command: ppm install Email::Send::
 ##Windows: 
 
 You need Perl installed on windows. Options are:
-* ActivePerl       - http://www.activestate.com/activeperl - Version I test on
+* ActivePerl       - http://www.activestate.com/activeperl - Version I have tested
 * Strawberry Perl  - http://strawberryperl.com/
 * DWIM Perl        - http://dwimperl.com/
 
 ~~~ Windows
-1. Download http://snapperl.stevemiles.me.uk/downloads/latest/snapPERL-latest.zip
-2. Extract to hard drive. Good place is C:\snapraid\snapPERL
+1. Download latest snapPERL from https://github.com/Osjur/snapPERL/releases/
+2. Extract to hard drive. Good place is under Snapraid folder eg. "C:\snapraid\snapPERL"
 3. Edit and rename snapPERL.conf.example to snapPERL.conf
 4. Rename custom-cmds.example custom-cmds
 5. Edit snapPERL.conf taking great care to enable Windows paths to conf and snapraid binary with correct full paths
@@ -32,10 +32,16 @@ You need Perl installed on windows. Options are:
 ~~~
 _(Always run first time on command line - Script will check your snapPERL conf file is valid)_
 
-#### Automation
+#### Automation using Task Scheduler
 
 ~~~
-Run Task Scheduler : Start Menu -> All Programs -> Accessories -> System tools -> Task Scheduler
+Automation:
+I will create .bat file at some point which asks user how one wants to schedule the script to run with task scheduler. 
+
+
+Manually:
+Run Task Scheduler : Start Menu -> Search -> Task Scheduler
+                     Start Menu -> All Programs -> Accessories -> System tools -> Task Scheduler
                      Start Menu -> Administrative Tools -> Task Scheduler
                      Start menu -> Run -> C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Administrative Tools\Task Scheduler.lnk
 
